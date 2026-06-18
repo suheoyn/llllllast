@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blank Object Archive</title>
+  <style>
+    @font-face {
+      font-family: 'TSCPaperletterOTF';
+      src: local('TSCPaperletterOTF'), local('TSCPaperletter'), local('TSC원고지글씨OTF'), local('TSC원고지글씨');
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'TSCPaperletterOTF', sans-serif;
+      background: #f7f7f7;
+      color: #222;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #f7f7f7;
+      border-bottom: 1px solid #ddd;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .site-title {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      color: #222;
+      text-decoration: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .site-title:hover {
+      opacity: 0.6;
+    }
+
+    .search-wrap {
+      flex: 1;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .search-input {
+      width: 160px;
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      font-size: 12px;
+      background: #fff;
+      outline: none;
+      transition: width 0.3s ease, border-color 0.2s;
+    }
+
+    .search-input:focus {
+      width: 220px;
+      border-color: #888;
+    }
+
+    .header-icon {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #555;
+      font-size: 16px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+
+    .header-icon:hover {
+      background: #eee;
+    }
+
+    .column-control-wrap {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-left: 10px;
+      margin-right: 4px;
+    }
+
+    .col-btn {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: none;
+      border: 1px solid #ccc;
+      border-radius: 50%;
+      font-size: 16px;
+      font-family: 'TSCPaperletterOTF', sans-serif;
+      font-weight: 500;
+      color: #555;
+      transition: background 0.2s, border-color 0.2s;
+      outline: none;
+      user-select: none;
+    }
+
+    .col-btn:hover {
+      background: #eee;
+      border-color: #888;
+    }
+
+    .col-btn:active {
+      background: #ddd;
+    }
+
+    /* ── Grid ── */
+    .grid-main {
+      padding: 0 16px;
+    }
+
+    .object-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+    }
+
+    .grid-cell {
+      border: 1px solid #ddd;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      margin: -0.5px;
+      /* collapse borders */
+      position: relative;
+      z-index: 1;
+    }
+
+    .grid-cell:hover {
+      transform: scale(1.1);
+      z-index: 2;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .grid-cell img {
+      width: 80%;
+      height: 80%;
+      object-fit: contain;
+      display: block;
+      pointer-events: none;
+    }
+
+    /* ── Footer area ── */
+    .footer-area {
+      text-align: center;
+      padding: 80px 0 0 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .add-btn {
+      display: inline-block;
+      padding: 10px 32px;
+      background: #f05a4a;
+      color: #fff;
+      font-family: 'TSCPaperletterOTF', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s ease, transform 0.15s ease;
+      letter-spacing: 0.04em;
+    }
+
+    .add-btn:hover {
+      background: #d94b3a;
+      transform: translateY(-1px);
+    }
+
+    .s2-footer {
+      margin-top: 100px;
+      font-size: clamp(14px, 1.0vw, 18px);
+      background: #ccc;
+      color: #222;
+      width: 100%;
+      padding: 30px 20px;
+      text-align: center;
+      box-sizing: border-box;
+      font-family: 'TSCPaperletterOTF', sans-serif;
+    }
+
+    /* ── Modal overlay ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: #fff;
+      border-radius: 12px;
+      width: 360px;
+      max-width: 92vw;
+      padding: 28px 24px 20px;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      font-size: 18px;
+      cursor: pointer;
+      color: #888;
+      background: none;
+      border: none;
+    }
+
+    .modal-img-wrap {
+      width: 100%;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .modal-img-wrap img {
+      max-width: 70%;
+      max-height: 70%;
+      object-fit: contain;
+    }
+
+    .modal-name {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #111;
+    }
+
+    .modal-desc {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.6;
+    }
+
+    /* ── Add Modal specific styles ── */
+    .add-modal-card {
+      background: #fff;
+      border-radius: 16px;
+      width: 440px;
+      max-width: 92vw;
+      padding: 36px 28px 28px;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      border: 1px solid #eee;
+    }
+
+    .add-modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: #111;
+      text-align: center;
+      letter-spacing: -0.02em;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #444;
+    }
+
+    .form-group input[type="text"],
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-sizing: border-box;
+    }
+
+    .form-group input[type="text"]:focus,
+    .form-group textarea:focus {
+      border-color: #f05a4a;
+      box-shadow: 0 0 0 3px rgba(240, 90, 74, 0.15);
+    }
+
+    .form-group textarea {
+      height: 90px;
+      resize: vertical;
+    }
+
+    .upload-zone {
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+      min-height: 120px;
+      box-sizing: border-box;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.dragover {
+      border-color: #f05a4a;
+      background: #fafafa;
+    }
+
+    .upload-icon-svg {
+      width: 32px;
+      height: 32px;
+      color: #aaa;
+    }
+
+    .upload-text {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .preview-img {
+      max-width: 100%;
+      max-height: 120px;
+      object-fit: contain;
+      border-radius: 4px;
+      display: none;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      background: #f05a4a;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      letter-spacing: 0.05em;
+      margin-top: 10px;
+    }
+
+    .submit-btn:hover {
+      background: #d94b3a;
+      transform: translateY(-1px);
+    }
+
+    .toast-message {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translate(-50%, 100px);
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      padding: 12px 28px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 300;
+      transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .toast-message.show {
+      transform: translate(-50%, 0);
+    }
+
+    /* ── Character Play Section ── */
+    .character-play-section {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      background: #fff;
+      border-bottom: none;
+      display: block;
+    }
+
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      display: flex;
+      cursor: pointer;
+    }
+
+    .video-wrapper video {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      display: block;
+    }
+
+    #video-2 {
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .click-text {
+      position: absolute;
+      color: black;
+      font-size: clamp(24px, 2.5vw, 40px);
+      font-family: 'TSCPaperletterOTF', 'TSCPaperLetter', sans-serif;
+      font-weight: 400;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 10;
+      animation: floatFade 2s ease forwards;
+    }
+
+    @keyframes floatFade {
+      0% {
+        opacity: 0;
+        margin-top: 10px;
+      }
+
+      10% {
+        opacity: 1;
+        margin-top: 0;
+      }
+
+      80% {
+        opacity: 1;
+        margin-top: -10px;
+      }
+
+      100% {
+        opacity: 0;
+        margin-top: -20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <a href="index.html" class="site-title">Blank Object Archive</a>
+    <div class="search-wrap">
+      <input class="search-input" type="text" id="search-input" placeholder="🔍 검색">
+    </div>
+    <div class="column-control-wrap">
+      <button class="col-btn" id="col-dec-btn" title="열 줄이기 (크게 보기)">+</button>
+      <button class="col-btn" id="col-inc-btn" title="열 늘리기 (작게 보기)">-</button>
+    </div>
+    <a href="index.html" class="header-icon" title="홈으로" style="text-decoration:none;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9 22 9 12 15 12 15 22" />
+      </svg>
+    </a>
+  </header>
+
+  <!-- Character Play Section -->
+  <section class="character-play-section">
+    <div class="video-wrapper" id="video-wrapper">
+      <video id="video-1" src="_1.mp4" autoplay loop muted playsinline></video>
+      <video id="video-2" src="_2.mp4" playsinline></video>
+    </div>
+    <div
+      style="text-align: center; color: #000; font-size: 17px; padding: 16px 0 40px; font-weight: 500; letter-spacing: -0.5px;">
+      위에 아이를 누르면서 같이 단어를 생각해보세요!
+    </div>
+  </section>
+
+  <!-- Grid -->
+  <main class="grid-main">
+    <div class="object-grid" id="object-grid">
+      <!-- injected by JS -->
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <div class="footer-area">
+    <button class="add-btn" id="add-btn">물건 추가하기</button>
+    <footer class="s2-footer">
+      Blank Object Archive &copy; 2026. Suhyun All rights reserved.
+    </footer>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close" id="modal-close">✕</button>
+      <div class="modal-img-wrap">
+        <img id="modal-img" src="" alt="">
+      </div>
+      <p class="modal-name" id="modal-name"></p>
+      <p class="modal-desc" id="modal-desc"></p>
+    </div>
+  </div>
+
+  <!-- Add Modal -->
+  <div class="modal-overlay" id="add-modal-overlay">
+    <div class="add-modal-card">
+      <button class="modal-close" id="add-modal-close">✕</button>
+      <h2 class="add-modal-title">새 물건 등록하기</h2>
+      <div class="form-group">
+        <label>물건 이미지</label>
+        <div class="upload-zone" id="upload-zone">
+          <input type="file" id="item-file-input" accept="image/*" style="display:none">
+          <svg class="upload-icon-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span class="upload-text" id="upload-text">클릭하거나 이미지를 드래그하여 업로드</span>
+          <img class="preview-img" id="preview-img" src="" alt="미리보기">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="item-name">이름</label>
+        <input type="text" id="item-name" placeholder="그 뭐라고 부르는 사물인가요?">
+      </div>
+      <div class="form-group">
+        <label for="item-desc">간단 설명</label>
+        <textarea id="item-desc" placeholder="물건의 용도나 특징을 설명해 주세요."></textarea>
+      </div>
+      <button class="submit-btn" id="submit-btn">등록하기</button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-message" id="toast-message"></div>
+
+  <script>
+    // ── Object data (uses assets/ images in numerical order) ──
+    const objects = [
+      { id: 1, file: '1_pizza.jpg', name: '피자 세이버', desc: '피자 박스 안에서 뚜껑이 내려앉지 않도록 받쳐주는 작은 플라스틱 받침대', tags: '피자 배달 삼발이 플라스틱 지지대 하얀색 흰색 화이트' },
+      { id: 2, file: '2_twist.png', name: '트위스트 타이', desc: '금속 와이어를 얇은 종이나 플라스틱 조각으로 감싸 구부리고 모양을 유지할 수 있도록 만든 패스너', tags: '식빵 봉지 묶기 철심 꼬기 주방 알록달록 노란색 빨간색 파란색' },
+      { id: 3, file: '3_traffic.png', name: '라바콘, 트래픽 콘', desc: '도로나 공사 현장에서 차량 통행을 유도하는 주황색 원뿔 표지물', tags: '도로 라바콘 원뿔 안전 공사 주차 주황 주황색 빨간색 오렌지 레드' },
+      { id: 4, file: '4_sipstick.png', name: '십스틱', desc: '음료를 마실 때 사용하는 가는 관 모양의 도구', tags: '커피 빨대 카페 두구멍 젓개 테이크아웃 검은색 빨간색 갈색' },
+      { id: 5, file: '5_breadclip.png', name: '브레드 클립', desc: '식빵 봉지 입구를 밀봉하는 작은 플라스틱 클립', tags: '식빵 봉지 클립 걸쇠 플라스틱 마감 하얀색 파란색 빨간색 노란색 흰색' },
+      { id: 6, file: '6_jambokso.png', name: '잠복소', desc: '겨울 동안 해충이 나무 아래로 내려와 월동할 은신처를 만들어 포집하는 방식', tags: '나무 가로수 짚 겨울 해충 벌레 보호 갈색 짚색 황토색' },
+      { id: 7, file: '7_nemyss.png', name: '네메스', desc: '이집트 파라오가 쓰던 헤드드레스 형태의 머리 장식', tags: '이집트 파라오 두건 투탕카멘 왕관 줄무늬 파란색 노란색 금색 블루 골드 옐로우' },
+      { id: 8, file: '8_adballoon.png', name: '애드벌룬', desc: '상업시설 앞에서 바람에 흔들리며 홍보 역할을 하는 대형 풍선', tags: '풍선 하늘 광고 행사 대형 오픈 빨간색 파란색 하얀색 흰색 레드' },
+      { id: 9, file: '9_mollyguard.png', name: '몰리가드', desc: '실수로 버튼을 누르지 못하도록 씌우는 보호 덮개', tags: '스위치 덮개 방지 보호 안전 서버 투명 빨간색' },
+      { id: 10, file: '10_doorguard.png', name: '도어가드', desc: '문 끝에 끼워 문이 벽에 부딪히는 것을 막는 고무 마개', tags: '문 손가락 안전 어린이 쿠션 보호 회색 검은색 흰색 파란색' },
+      { id: 11, file: '11_maracas.png', name: '마라카스', desc: '손으로 흔들어 소리를 내는 타악기', tags: '악기 타악기 라틴 흔들기 리듬 살사 갈색 빨간색 나무색' },
+      { id: 12, file: '12_sealingknife.png', name: '실링칼, 랩칼', desc: '봉투나 포장지를 열 때 사용하는 납작한 칼 모양 도구', tags: '바느질 재봉 뜯기 실 도구 의류 빨간색 파란색' },
+      { id: 13, file: '13_ribbonmarker.png', name: '가름', desc: '책에 끈 형태로 달려 있는 얇은 리본 북마크', tags: '책 독서 책갈피 페이지 리본 마커 빨간색 노란색 파란색 알록달록' },
+      { id: 14, file: '14_confetti.png', name: '컨페티', desc: '축제나 파티에서 뿌리는 알록달록한 작은 종이 조각들', tags: '파티 행사 축하 종이 장식 생일 무지개색 알록달록 화려한' },
+      { id: 15, file: '15_Okchundang.png', name: '옥춘당', desc: '쌀가루로 만든 한국 전통 사탕', tags: '사탕 알사탕 전통 구슬 간식 오방색 빨간색 노란색 파란색 흰색 알록달록 무지개색' },
+      { id: 16, file: '16_aglet.png', name: '에글렛', desc: '신발끈이나 옷끈 끝에 붙어 있는 금속 또는 플라스틱 캡', tags: '신발 끈 마감 금속 캡 신발끈 가방 은색 투명 검은색 실버' },
+      { id: 17, file: '17_baran.png', name: '바란', desc: '도시락이나 초밥 사이에 넣는 초록색 플라스틱 잎 장식', tags: '초밥 도시락 구분 녹색잎 플라스틱 일본 초록색 녹색 그린' },
+      { id: 18, file: '18_lashtab.png', name: '래 탭', desc: '스트랩·끈·카라비너 등을 통과시켜 마달거나 고정하는 용도', tags: '화물 트럭 고정 로프 D링 운송 검은색 브라운 가죽색' },
+      { id: 19, file: '19_nail.png', name: '네일 파일', desc: '손톱을 갈아 형태를 만들거나 거친 단면을 정리하는 네일 케어 도구', tags: '망치 박기 벽 고정 금속 철 공구 은색 회색 쇠색 실버' },
+      { id: 20, file: '20_sealingwax.png', name: '실링왁스', desc: '편지나 문서 봉인에 사용하는 밀봉용 왁스', tags: '편지 봉인 스탬프 왁스 인장 복고 빨간 빨간색 붉은색 레드' },
+      { id: 21, file: '21_Buoy.png', name: '부표', desc: '바다나 강에 떠 있어 항로나 위험 구역을 표시하는 기구', tags: '바다 항해 신호 부유 항구 안전 빨간색 노란색 주황색 오렌지 레드 옐로우' },
+      { id: 22, file: '22_NavalMine.png', name: '기뢰', desc: '수중에 설치해 적 선박을 파괴하는 폭발 무기', tags: '바다 해군 무기 폭발 전쟁 수중 검은색 흑색 블랙' },
+      { id: 23, file: '23_bollard.png', name: '볼라드', desc: '보행자 구역이나 도로 경계에 세우는 짧은 기둥 모양 구조물', tags: '인도 차단 주차 도시 기둥 안전 보행자 회색 검은색 그레이 블랙' },
+      { id: 24, file: '24_Fruit tray.png', name: '난좌', desc: '과일을 보호하며 담아 두는 받침', tags: '과일 사과 마트 포장 스티로폼 보호 하얀색 노란색 흰색 분홍색 핑크 화이트 옐로우' },
+      { id: 25, file: '25_Egg code.png', name: '난각 번호', desc: '달걀 껍데기에 찍힌 생산 정보 코드', tags: '달걀 코드 이력 식품 안전 숫자 껍데기 빨간색 검은색 붉은색' },
+      { id: 26, file: '26_eggcarton.png', name: '달걀 판', desc: '달걀을 개별 칸에 넣어 보관하는 종이 혹은 플라스틱 용기', tags: '달걀 포장 운반 칸막이 종이 보관 회색 갈색 종이색' },
+      { id: 27, file: '27_shiphelm.png', name: '타륜', desc: '배의 방향을 조종하는 원형 바퀴 모양 장치', tags: '배 항해 바퀴 조타 선박 방향 해적 갈색 나무색 브라운' },
+      { id: 28, file: '28_Bale Silage.png', name: '곤포 사일리지', desc: '건초나 사료를 둥글게 압축해 비닐로 싼 농업용 뭉치', tags: '농장 사료 발효 비닐 소 들판 원통 하얀색 흰색 화이트' },
+      { id: 29, file: '29_kee.png', name: '키', desc: '곡식이나 돌, 쭉정이를 골라내는 전통 농기구', tags: '배 구조 선박 균형 건조 척추 갈색 나무색 브라운' },
+      { id: 30, file: '30_doe.png', name: '(쌀)되', desc: '전통적으로 쌀을 부피로 재는 단위', tags: '사슴 동물 암컷 숲 자연 온순 갈색 나무색 브라운' },
+      { id: 31, file: '31_honeystick.png', name: '꿀봉, 허니디퍼', desc: '꿀을 붓는 스푼스틱', tags: '꿀 주방 나무 막대 디저트 나선 갈색 나무색 노란색 브라운 옐로우' },
+      { id: 32, file: '32_Garland.png', name: '가랜드', desc: '파티나 장식에 쓰이는 연속적으로 연결된 종이나 천 장식', tags: '파티 장식 행사 꾸미기 생일 인테리어 알록달록 무지개색 화려한' },
+      { id: 33, file: '33_messtin.png', name: '반합', desc: '야외 취사에 사용하는 알루미늄 조리도구', tags: '캠핑 취사 알루미늄 야외 백패킹 군용 은색 회색 실버' },
+      { id: 34, file: '34_starping.png', name: '스타핑', desc: '겉 포장과 제품 사이 공간에 채워 넣는 종이나 솜 따위의 포장재', tags: '태극기 깃대 꼭대기 무궁화 금색 봉오리 국기 금색 노란색 골드' },
+      { id: 35, file: '35_sprinkle.png', name: '스프링클', desc: '케이크나 디저트 위에 뿌리는 알록달록한 설탕 장식.', tags: '케이크 아이스크림 설탕 장식 디저트 달콤 무지개 알록달록 무지개색 화려한' },
+      { id: 36, file: '36_hook pin.png', name: '양말 코핀', desc: ' 양말 앞코를 집어 고정하 포장용 핀', tags: '의류 고리 잠금 핀 후크 패션 잠금장치 은색 실버 쇠색' },
+      { id: 37, file: '37_Tetrapod.png', name: '테트라포드', desc: '파도를 막기 위해 해안가에 쌓는 콘크리트 블록.', tags: '방파제 해안 콘크리트 파도 항구 보호 네다리 회색 그레이 콘크리트색' },
+      { id: 38, file: '38_easel.png', name: '이젤', desc: '그림을 그릴 때 캔버스나 화판을 세우는 삼각 받침대', tags: '그림 미술 캔버스 삼각대 화가 전시 갈색 나무색 브라운' },
+      { id: 39, file: '39_Equalizer.png', name: '이퀄라이저', desc: '음향 기기에서 주파수 대역별 음량을 조절하는 장치', tags: '음악 소리 주파수 음향 스피커 오디오 슬라이더 검은색 은색 블랙 실버' },
+      { id: 40, file: '40_Tumbleweed.png', name: '회전초, 텀블위드', desc: '바람에 굴러다니는 서부의 건조한 식물 덩어리', tags: '사막 서부 바람 식물 굴러다니는 미국 갈색 황토색 짚색 브라운' },
+      { id: 41, file: '41_gavel.png', name: '의사봉', desc: '법정이나 경매에서 결정을 선언할 때 두드리는 나무 망치', tags: '법원 판사 경매 망치 결정 선언 의회 갈색 나무색 브라운' },
+      { id: 42, file: '42_albedo.png', name: '귤', desc: '귤 과육에 붙어 있는 흰 섬유질층', tags: '귤 오렌지 속껍질 과일 쓴맛 하얀 섬유 하얀색 흰색 주황색' },
+      { id: 43, file: '43_Sombrero.png', name: '솜브레로', desc: '넓은 챙이 특징인 멕시코 전통 모자', tags: '멕시코 모자 전통 라틴 챙모자 스페인 갈색 노란색 짚색' },
+      { id: 44, file: '44_kelp noodles.png', name: '천사채', desc: '해조류를 가공해 만든 식품', tags: '다시마 해조류 국수 건강식 채식 저칼로리 하얀색 흰색 반투명 투명' },
+      { id: 45, file: '45_mortar and pestle.png', name: '막자사발', desc: '재료를 빻거나 갈 때 사용하는 도자기로 만든 도구', tags: '절구 향신료 빻기 조리 돌 주방 갈기 회색 돌색 그레이' },
+      { id: 46, file: '46_crescent.png', name: '크리센트', desc: '창문·미닫이문에서 창짝을 프레임에 밀착 고정하는 잠금장치', tags: '달 초승달 이슬람 장식 밤 기호 하늘 노란색 옐로우 금색' },
+      { id: 47, file: '47_ferrule.png', name: '국기봉', desc: '태극기를 고정해 게양하거나 보관할 때 쓰는 봉', tags: '우산 지팡이 연필 마감 금속 캡 보호 은색 금색 실버 골드' },
+      { id: 48, file: '48_Pull loops.png', name: '풀 룹스', desc: '가방이나 신발에 달린 손잡이용 고리', tags: '지퍼 가방 옷 당기기 고리 패션 야외 검은색 블랙' },
+      { id: 49, file: '49_slide buckle.png', name: '왈자고리', desc: '벨트나 스트랩의 길이를 조절하는 슬라이딩 금속 버클', tags: '가방 배낭 버클 스트랩 조절 금속 벨트 검은색 블랙 은색' },
+      { id: 50, file: '50_paper tube.png', name: '지관', desc: '두루마리 화장지나 주방 타올 안에 있는 원통형 종이 심', tags: '화장지 두루마리 종이 심 재활용 원통 공예 갈색 종이색 브라운 황토색' },
+    ];
+
+    const grid = document.getElementById('object-grid');
+    const searchInput = document.getElementById('search-input');
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalClose = document.getElementById('modal-close');
+    const modalImg = document.getElementById('modal-img');
+    const modalName = document.getElementById('modal-name');
+    const modalDesc = document.getElementById('modal-desc');
+
+    function renderGrid(list) {
+      grid.innerHTML = '';
+      list.forEach(obj => {
+        const cell = document.createElement('div');
+        cell.className = 'grid-cell';
+        const imgSrc = obj.file.startsWith('data:') || obj.file.startsWith('blob:') ? obj.file : `assets/${obj.file}`;
+        cell.innerHTML = `<img src="${imgSrc}" alt="${obj.name}" loading="lazy">`;
+        cell.addEventListener('click', () => openModal(obj));
+        grid.appendChild(cell);
+      });
+    }
+
+    function openModal(obj) {
+      const imgSrc = obj.file.startsWith('data:') || obj.file.startsWith('blob:') ? obj.file : `assets/${obj.file}`;
+      modalImg.src = imgSrc;
+      modalImg.alt = obj.name;
+      modalName.textContent = obj.name;
+      modalDesc.textContent = obj.desc;
+      modalOverlay.classList.add('active');
+    }
+
+    modalClose.addEventListener('click', () => modalOverlay.classList.remove('active'));
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) modalOverlay.classList.remove('active');
+    });
+
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim().toLowerCase();
+      if (!q) {
+        renderGrid(objects);
+        return;
+      }
+      const keywords = q.split(/\s+/);
+      const filtered = objects.filter(o => {
+        const textToSearch = (o.name + ' ' + o.desc + (o.tags ? ' ' + o.tags : '')).toLowerCase();
+        // 모든 키워드가 이름이나 설명(또는 태그)에 포함되어 있는지 확인
+        return keywords.every(kw => textToSearch.includes(kw));
+      });
+      renderGrid(filtered);
+    });
+
+    // Grid column scaling controls
+    let columnCount = 4;
+    const colDecBtn = document.getElementById('col-dec-btn');
+    const colIncBtn = document.getElementById('col-inc-btn');
+
+    function updateGridColumns() {
+      grid.style.gridTemplateColumns = `repeat(${columnCount}, 1fr)`;
+    }
+
+    colDecBtn.addEventListener('click', () => {
+      if (columnCount > 2) {
+        columnCount--;
+        updateGridColumns();
+      }
+    });
+
+    colIncBtn.addEventListener('click', () => {
+      if (columnCount < 8) {
+        columnCount++;
+        updateGridColumns();
+      }
+    });
+
+    // ── Add Modal Elements & Events ──
+    const addBtn = document.getElementById('add-btn');
+    const addModalOverlay = document.getElementById('add-modal-overlay');
+    const addModalClose = document.getElementById('add-modal-close');
+    const uploadZone = document.getElementById('upload-zone');
+    const itemFileInput = document.getElementById('item-file-input');
+    const uploadText = document.getElementById('upload-text');
+    const previewImg = document.getElementById('preview-img');
+    const uploadIconSvg = document.querySelector('.upload-icon-svg');
+    const submitBtn = document.getElementById('submit-btn');
+    const toastMessage = document.getElementById('toast-message');
+
+    let uploadedImageData = '';
+
+    function showToast(message) {
+      toastMessage.textContent = message;
+      toastMessage.classList.add('show');
+      setTimeout(() => {
+        toastMessage.classList.remove('show');
+      }, 2500);
+    }
+
+    addBtn.addEventListener('click', () => {
+      uploadedImageData = '';
+      previewImg.src = '';
+      previewImg.style.display = 'none';
+      uploadIconSvg.style.display = 'block';
+      uploadText.style.display = 'block';
+      document.getElementById('item-name').value = '';
+      document.getElementById('item-desc').value = '';
+      addModalOverlay.classList.add('active');
+    });
+
+    addModalClose.addEventListener('click', () => {
+      addModalOverlay.classList.remove('active');
+    });
+
+    addModalOverlay.addEventListener('click', (e) => {
+      if (e.target === addModalOverlay) addModalOverlay.classList.remove('active');
+    });
+
+    uploadZone.addEventListener('click', () => {
+      itemFileInput.click();
+    });
+
+    itemFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) handleFile(file);
+    });
+
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('dragover');
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('dragover');
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        handleFile(file);
+      } else {
+        showToast('이미지 파일만 업로드할 수 있습니다.');
+      }
+    });
+
+    function handleFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        uploadedImageData = e.target.result;
+        previewImg.src = uploadedImageData;
+        previewImg.style.display = 'block';
+        uploadIconSvg.style.display = 'none';
+        uploadText.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    submitBtn.addEventListener('click', () => {
+      const name = document.getElementById('item-name').value.trim();
+      const desc = document.getElementById('item-desc').value.trim();
+
+      if (!uploadedImageData) {
+        showToast('이미지를 등록해 주세요.');
+        return;
+      }
+      if (!name) {
+        showToast('이름을 입력해 주세요.');
+        return;
+      }
+      if (!desc) {
+        showToast('간단 설명을 입력해 주세요.');
+        return;
+      }
+
+      const newItem = {
+        id: Date.now(),
+        file: uploadedImageData,
+        name: name,
+        desc: desc
+      };
+
+      objects.unshift(newItem); // Add new item to front of objects array
+      renderGrid(objects); // Redraw grid
+      addModalOverlay.classList.remove('active'); // Close modal
+      showToast('물건이 성공적으로 등록되었습니다!');
+    });
+
+    // ── Character Video Logic ──
+    const videoWrapper = document.getElementById('video-wrapper');
+    const vid1 = document.getElementById('video-1');
+    const vid2 = document.getElementById('video-2');
+    let isPlayingTwo = false;
+
+    videoWrapper.addEventListener('click', () => {
+      // ── Spawn random text ──
+      const phrases = [
+        "그 뭐였지..", "그그그 그", "아 그거", "그거 있잖아", "어...",
+        "그거 뭐였더라", "아아아 아 그", " 그 그!!", "아 그거!!"
+      ];
+      const textEl = document.createElement('div');
+      textEl.className = 'click-text';
+      textEl.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+
+      // Decide edge to avoid center (0: top, 1: right, 2: bottom, 3: left)
+      const edge = Math.floor(Math.random() * 4);
+      let randomTop, randomLeft;
+
+      if (edge === 0) {
+        randomTop = Math.random() * 15; // 0~15%
+        randomLeft = Math.random() * 80;
+      } else if (edge === 1) {
+        randomTop = Math.random() * 80;
+        randomLeft = 75 + Math.random() * 15; // 75~90%
+      } else if (edge === 2) {
+        randomTop = 75 + Math.random() * 15; // 75~90%
+        randomLeft = Math.random() * 80;
+      } else {
+        randomTop = Math.random() * 80;
+        randomLeft = Math.random() * 15; // 0~15%
+      }
+      const randomRot = -15 + Math.random() * 30; // -15deg ~ 15deg
+
+      textEl.style.top = `${randomTop}%`;
+      textEl.style.left = `${randomLeft}%`;
+      textEl.style.transform = `rotate(${randomRot}deg)`;
+
+      videoWrapper.appendChild(textEl);
+      setTimeout(() => textEl.remove(), 2000);
+
+      if (isPlayingTwo) return; // Prevent double click
+      isPlayingTwo = true;
+
+      vid1.style.opacity = '0';
+      vid2.style.opacity = '1';
+
+      vid2.currentTime = 0;
+      vid2.play();
+    });
+
+    vid2.addEventListener('ended', () => {
+      if (isPlayingTwo) {
+        isPlayingTwo = false;
+
+        vid2.style.opacity = '0';
+        vid1.style.opacity = '1';
+
+        vid1.play();
+      }
+    });
+
+    // Initial render
+    renderGrid(objects);
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>Blank Object Archive</title>
+	<style>
+		@font-face {
+			font-family: 'TSCPaperLetter';
+			src: url('./fonts/TSCPaperLetter.woff2') format('woff2'),
+				url('./fonts/TSCPaperLetter.woff') format('woff');
+			font-weight: normal;
+			font-style: normal;
+		}
+		}
+
+		body,
+		h1,
+		h2,
+		p {
+			margin: 0;
+			padding: 0;
+		}
+
+		html {
+			scroll-behavior: smooth;
+			scroll-snap-type: none;
+		}
+
+		body {
+			background: black;
+			color: white;
+			font-family: 'TSCPaperletterOTF', sans-serif;
+			margin: 0;
+			padding: 0;
+			overflow-x: hidden;
+		}
+
+		/* Container for scroll-linked content sticky in viewport */
+		.sticky-wrapper {
+			position: sticky;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100vh;
+			background: black;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			overflow: hidden;
+			z-index: 10;
+		}
+
+		/* Text styles matching reference layout and sizes */
+		.text-bubble {
+			position: absolute;
+			color: white;
+			font-family: 'TSCPaperletterOTF', sans-serif;
+			font-weight: 400;
+			user-select: none;
+			opacity: 0;
+			pointer-events: auto;
+		}
+
+		.tb-1 {
+			top: 20%;
+			right: 6%;
+			font-size: clamp(24px, 2.3vw, 44px);
+			text-align: right;
+		}
+
+		.tb-2 {
+			top: 17%;
+			left: 12.1%;
+			font-size: clamp(24px, 2.3vw, 44px);
+			line-height: 1.4;
+			text-align: left;
+		}
+
+		.tb-3 {
+			top: 15.6%;
+			left: 34.2%;
+			font-size: clamp(24px, 2.3vw, 44px);
+			text-align: left;
+		}
+
+		.tb-4 {
+			top: 74.5%;
+			left: 20.7%;
+			font-size: clamp(24px, 2.3vw, 44px);
+			text-align: left;
+		}
+
+		.tb-center {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			color: black;
+			font-family: 'TSCPaperletterOTF', sans-serif;
+			font-weight: 700;
+			user-select: none;
+			opacity: 0;
+			pointer-events: none;
+			font-size: clamp(40px, 5vw, 90px);
+			z-index: 15;
+			text-align: center;
+		}
+
+		/* Centered eye gif container */
+		.eye-container {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			width: 26%;
+			max-width: 600px;
+			min-width: 300px;
+			aspect-ratio: 917 / 878;
+			transform: translate(-50%, -50%);
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			pointer-events: auto;
+			z-index: 10;
+		}
+
+		.eye-gif {
+			width: 100%;
+			height: 100%;
+			display: block;
+			pointer-events: none;
+			position: absolute;
+			z-index: 2;
+		}
+
+		/* Eyeball overlay dimensions */
+		.eyeball {
+			position: absolute;
+			left: 49.9%;
+			top: 48.3%;
+			width: 18.0%;
+			height: 11.5%;
+			background: black;
+			border-radius: 50%;
+			transform: translate(-50%, -50%);
+			overflow: hidden;
+			z-index: 3;
+		}
+
+		/* Pupil overlay dimensions */
+		.pupil {
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			width: 50%;
+			height: 41.7%;
+			background: white;
+			border-radius: 50%;
+			transform: translate(-50%, -50%);
+			pointer-events: none;
+			transition: transform 0.05s ease-out;
+		}
+
+		/* Scroll page container */
+		#s2 {
+			position: relative;
+			background: #eee;
+			width: 100%;
+			z-index: 20;
+			/* High z-index to overlay on top of s1 content if needed */
+		}
+
+		.scroll-page-wrap {
+			position: relative;
+			max-width: 1920px;
+			margin: 0 auto;
+			width: 100%;
+		}
+
+		.scroll-page-img {
+			width: 100%;
+			display: block;
+		}
+
+		/* Pure HTML top section styling */
+		.s2-top-section {
+			background: #eee;
+			color: black;
+			box-sizing: border-box;
+			padding: 140px 11% 100px 11%;
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-start;
+			position: relative;
+		}
+
+		.s2-intro-text {
+			font-size: clamp(18px, 1.35vw, 26px);
+			line-height: 1.8;
+			color: #111;
+			font-weight: 400;
+			text-align: left;
+		}
+
+		.s2-eyes-container {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			gap: 135px;
+			margin-top: 450px;
+			margin-bottom: 400px;
+			position: sticky;
+			top: calc(50vh - 39px);
+			z-index: 15;
+		}
+
+		.s2-eye {
+			width: 120px;
+			height: 78px;
+			background: black;
+			border-radius: 50%;
+			position: relative;
+			overflow: hidden;
+		}
+
+		.s2-pupil {
+			width: 40px;
+			height: 25px;
+			background: white;
+			border-radius: 50%;
+			position: absolute;
+			left: 50%;
+			transform: translate(-50%, 72px);
+			/* Initial looking down, lower */
+			transition: transform 0.05s ease-out;
+		}
+
+		/* Upward fade-in animation styles for text blocks */
+		.s2-intro-text,
+		.s2-stare-text {
+			opacity: 0;
+			transform: translateY(50px);
+			transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1), transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+		}
+
+		.s2-intro-text.appear,
+		.s2-stare-text.appear {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		.s2-eyes-container {
+			opacity: 0;
+			transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+		}
+
+		.s2-eyes-container.appear {
+			opacity: 1;
+		}
+
+		.s2-intro-text.appear {
+			transition-delay: 0s;
+		}
+
+		.s2-eyes-container.appear {
+			transition-delay: 0.15s;
+		}
+
+		.s2-stare-text.appear {
+			transition-delay: 0.3s;
+		}
+
+		.s2-stare-text {
+			font-size: clamp(28px, 2.2vw, 44px);
+			font-weight: 500;
+			color: black;
+			text-align: center;
+			margin-top: 20px;
+			margin-bottom: 40px;
+		}
+
+		/* Section B: Scattered Keywords Section */
+		.s2-mid-section {
+			position: relative;
+			width: 100%;
+			height: 900px;
+			background: #000;
+			overflow: hidden;
+			box-sizing: border-box;
+		}
+
+		.s2-keyword {
+			position: absolute;
+			color: rgba(255, 255, 255, 0.7);
+			font-family: 'TSCPaperletterOTF', sans-serif;
+			font-weight: 300;
+			font-size: clamp(14px, 1.1vw, 20px);
+			white-space: nowrap;
+			user-select: none;
+			transition: transform 0.2s ease, color 0.2s ease;
+		}
+
+		.s2-keyword:hover {
+			color: #fff;
+			transform: scale(1.1);
+		}
+
+		/* Position coordinates for the 20 scattered keywords */
+		.kw-1 {
+			left: 5%;
+			top: 12%;
+		}
+
+		.kw-2 {
+			left: 25%;
+			top: 8%;
+		}
+
+		.kw-3 {
+			left: 55%;
+			top: 5%;
+		}
+
+		.kw-4 {
+			left: 38%;
+			top: 18%;
+		}
+
+		.kw-5 {
+			left: 80%;
+			top: 20%;
+		}
+
+		.kw-6 {
+			left: 10%;
+			top: 25%;
+		}
+
+		.kw-7 {
+			left: 88%;
+			top: 32%;
+		}
+
+		.kw-8 {
+			left: 48%;
+			top: 35%;
+		}
+
+		.kw-9 {
+			left: 13%;
+			top: 43%;
+		}
+
+		.kw-10 {
+			left: 33%;
+			top: 43%;
+		}
+
+		.kw-11 {
+			left: 75%;
+			top: 48%;
+		}
+
+		.kw-12 {
+			left: 60%;
+			top: 53%;
+		}
+
+		.kw-13 {
+			left: 25%;
+			top: 60%;
+		}
+
+		.kw-14 {
+			left: 46%;
+			top: 58%;
+		}
+
+		.kw-15 {
+			left: 3%;
+			top: 78%;
+		}
+
+		.kw-16 {
+			left: 16%;
+			top: 85%;
+		}
+
+		.kw-17 {
+			left: 38%;
+			top: 78%;
+		}
+
+		.kw-18 {
+			left: 52%;
+			top: 88%;
+		}
+
+		.kw-19 {
+			left: 69%;
+			top: 77%;
+		}
+
+		.kw-20 {
+			left: 90%;
+			top: 78%;
+		}
+
+		.s2-mid-title {
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+			width: 90%;
+			text-align: center;
+			color: white;
+			font-family: 'TSCPaperletterOTF', sans-serif;
+			font-weight: 400;
+			font-size: clamp(28px, 2.2vw, 44px);
+			letter-spacing: -0.01em;
+		}
+
+		/* Section C: Timeline section */
+		.s2-timeline-section {
+			position: relative;
+			background: #eee;
+			color: black;
+			width: 100%;
+			padding-bottom: 80px;
+			box-sizing: border-box;
+			scroll-snap-align: start;
+		}
+
+		.s2-funnel {
+			width: 100%;
+			height: 120px;
+			display: block;
+			margin-top: -1px;
+			/* Avoid anti-aliasing gap lines */
+		}
+
+		.s2-question-title {
+			font-size: clamp(32px, 2.5vw, 48px);
+			font-weight: 700;
+			color: black;
+			text-align: center;
+			margin-top: 150px;
+			margin-bottom: 250px;
+		}
+
+		.s2-timeline-container {
+			position: relative;
+			width: 100%;
+			max-width: 1200px;
+			margin: 0 auto;
+			padding: 0 20px;
+			box-sizing: border-box;
+		}
+
+		.s2-timeline-line {
+			position: absolute;
+			left: 50%;
+			top: 0;
+			bottom: 0;
+			width: 2px;
+			background: black;
+			transform: translateX(-50%) scaleY(0);
+			transform-origin: top;
+			transition: transform 0.1s ease-out;
+		}
+
+		.s2-timeline-row {
+			display: flex;
+			justify-content: space-between;
+			position: relative;
+			height: 100vh;
+			align-items: center;
+			margin-bottom: 0;
+			scroll-snap-align: start;
+			box-sizing: border-box;
+		}
+
+		.s2-timeline-col {
+			width: 45%;
+			box-sizing: border-box;
+		}
+
+		.s2-timeline-col.empty {
+			/* Empty side */
+		}
+
+		.s2-timeline-card {
+			background: white;
+			color: black;
+			padding: 30px;
+			border-radius: 12px;
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+			border: 1px solid #ddd;
+			text-align: left;
+			opacity: 0;
+			transform: translateY(35px);
+			transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+		}
+
+		.s2-timeline-row.active .s2-timeline-card {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		.s2-timeline-card h3 {
+			font-size: clamp(18px, 1.3vw, 24px);
+			font-weight: 700;
+			margin-bottom: 15px;
+			color: #111;
+		}
+
+		.s2-timeline-card p {
+			font-size: clamp(14px, 1.05vw, 17px);
+			line-height: 1.7;
+			color: #444;
+			font-weight: 400;
+		}
+
+		.s2-timeline-dot {
+			width: 16px;
+			height: 16px;
+			background: black;
+			border: 4px solid #eee;
+			border-radius: 50%;
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%) scale(0);
+			z-index: 2;
+			opacity: 0;
+			transition: opacity 0.5s ease-out, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+		}
+
+		.s2-timeline-row.active .s2-timeline-dot {
+			opacity: 1;
+			transform: translate(-50%, -50%) scale(1);
+		}
+
+		/* Section D: Call-to-action & Footer section */
+		.s2-bottom-section {
+			background: #eee;
+			color: black;
+			text-align: center;
+			padding: 100px 0 0 0;
+			box-sizing: border-box;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			scroll-snap-align: start;
+		}
+
+		.s2-intro-wrap {
+			max-width: 800px;
+			margin-bottom: 50px;
+			padding: 0 20px;
+			box-sizing: border-box;
+		}
+
+		.s2-intro-wrap p {
+			font-size: clamp(20px, 1.5vw, 28px);
+			line-height: 1.8;
+			color: #333;
+			margin-bottom: 20px;
+			font-weight: 400;
+		}
+
+		.s2-intro-wrap .s2-cta-prompt {
+			font-size: clamp(24px, 1.8vw, 36px);
+			font-weight: 700;
+			color: black;
+			margin-top: 40px;
+		}
+
+		.s2-cta-btn {
+			display: inline-block;
+			background: rgb(241, 93, 83);
+			color: white;
+			padding: 18px 45px;
+			border-radius: 50px;
+			font-size: 16px;
+			font-weight: 500;
+			text-decoration: none;
+			box-shadow: 0 4px 15px rgba(241, 93, 83, 0.3);
+			transition: transform 0.2s ease, background 0.2s ease;
+			cursor: pointer;
+		}
+
+		.s2-cta-btn:hover {
+			background: rgb(225, 78, 68);
+			transform: translateY(-2px);
+		}
+
+		.s2-footer {
+			margin-top: 100px;
+			font-size: clamp(14px, 1.0vw, 18px);
+			background: #ccc;
+			color: #222;
+			width: 100%;
+			padding: 30px 20px;
+			text-align: center;
+			box-sizing: border-box;
+		}
+	</style>
+</head>
+
+<body>
+
+	<!-- Sticky Scrollytelling Section -->
+	<section id="s1" style="position: relative; background: black; height: 900vh;">
+		<div class="sticky-wrapper">
+			<div id="text-1" class="text-bubble tb-1" style="opacity: 1;">아 뭐였더라 그거?</div>
+			<div id="text-2" class="text-bubble tb-2">그.. 그 그 뭐냐<br>그거 그..</div>
+			<div id="text-3" class="text-bubble tb-3">그 있잖아</div>
+			<div id="text-4" class="text-bubble tb-4">그!!!! 그..!</div>
+			<div class="eye-container" id="eye-container">
+				<img class="eye-gif" src="eye.gif" alt="낙서 눈">
+				<div class="eyeball" id="eyeball">
+					<div class="pupil" id="pupil"></div>
+				</div>
+			</div>
+			<div id="text-echo" class="tb-center">그!!!!!!!</div>
+		</div>
+	</section>
+
+	<!-- Scrollable Page Section -->
+	<section id="s2">
+		<div class="scroll-page-wrap">
+			<!-- Pure HTML/CSS for the top light gray section -->
+			<div class="s2-top-section">
+				<div class="s2-intro-text">
+					분명 머릿속엔 그 물건의 생김새, 재질, 촉감까지 생생한데<br>
+					단어 이름만 기억이 안 날 때의 그 답답함, 누구나 겪어봤을 겁니다.<br>
+					다들 그 이름을 기억해내기 위해
+				</div>
+				<div class="s2-eyes-container">
+					<div class="s2-eye">
+						<div class="s2-pupil" id="s2-pupil-left"></div>
+					</div>
+					<div class="s2-eye">
+						<div class="s2-pupil" id="s2-pupil-right"></div>
+					</div>
+				</div>
+				<div class="s2-stare-text">
+					먼 허공이나 천장을 바라보거나
+				</div>
+			</div>
+
+			<!-- Pure HTML/CSS for Section B (Black scattered keywords section) -->
+			<div class="s2-mid-section">
+				<div class="s2-keyword kw-1">빵집에 그거!</div>
+				<div class="s2-keyword kw-2">물렁한거!</div>
+				<div class="s2-keyword kw-3">나무에 그거!</div>
+				<div class="s2-keyword kw-4">어디 달린거!</div>
+				<div class="s2-keyword kw-5">색깔 다양한거!</div>
+				<div class="s2-keyword kw-6">빨간거!</div>
+				<div class="s2-keyword kw-7">요즘 보이는거!</div>
+				<div class="s2-keyword kw-8">날카로운거!</div>
+				<div class="s2-keyword kw-9">카페가면 있는거!</div>
+				<div class="s2-keyword kw-10">시퍼런거!</div>
+				<div class="s2-keyword kw-11">시골가면 있는거!</div>
+				<div class="s2-keyword kw-12">음식에 그거!</div>
+				<div class="s2-keyword kw-13">집에 하나씩 있는거!</div>
+				<div class="s2-keyword kw-14">끝에 있는거!</div>
+				<div class="s2-keyword kw-15">마트가면 있는거!</div>
+				<div class="s2-keyword kw-16">가로 무늬있는거!</div>
+				<div class="s2-keyword kw-17">옛날거!</div>
+				<div class="s2-keyword kw-18">쨍한거!</div>
+				<div class="s2-keyword kw-19">둥근거!</div>
+				<div class="s2-keyword kw-20">딱딱한거!</div>
+
+				<div class="s2-mid-title">
+					이름 대신 물건의 특징을 스무고개 하듯 쏟아냅니다.
+				</div>
+			</div>
+
+			<!-- Pure HTML/CSS for Section C (Timeline scientific explanations section) -->
+			<div class="s2-timeline-section">
+				<!-- Funnel SVG to transition from black BG to gray BG -->
+				<svg class="s2-funnel" viewBox="0 0 100 100" preserveAspectRatio="none">
+					<path d="M 0 0 L 100 0 L 50 100 Z" fill="black"></path>
+				</svg>
+
+				<div class="s2-question-title">
+					왜 기억이 안 날까요?
+				</div>
+
+				<div class="s2-timeline-container">
+					<div class="s2-timeline-line"></div>
+
+					<!-- Row 1: Right card -->
+					<div class="s2-timeline-row">
+						<div class="s2-timeline-dot"></div>
+						<div class="s2-timeline-col empty"></div>
+						<div class="s2-timeline-col">
+							<div class="s2-timeline-card">
+								<h3>1) 설단 현상(TOT)</h3>
+								<p>말 그대로 "단어가 혀끝에서 맴돌기만 하고 튀어나오지 않는 현상"을 뜻합니다. <br> 뇌 속의 '개념(의미)'과 '시각(이미지)' 정보는
+									활성화되었으나, 그것을 인출하는 <br> '음운(소리/단어)' 정보로 가는 통로가 순간적으로 차단되었을 때 발생합니다.</p>
+							</div>
+						</div>
+					</div>
+
+					<!-- Row 2: Left card -->
+					<div class="s2-timeline-row">
+						<div class="s2-timeline-dot"></div>
+						<div class="s2-timeline-col">
+							<div class="s2-timeline-card">
+								<h3>2) 기억 인출 실패 및 순행 간섭</h3>
+								<p>정보가 뇌 저장소에서 완전히 사라진 것(망각)이 아니라, 저장되어 있는 장소를 찾지 <br> 못하는 상태입니다. 특히 과거의 유사한 기억이나 단어가
+									방해를 놓아 진짜 찾아야 할 단어의 길을 막는 것을 순행 간섭이라고 합니다. 다른 엉뚱한 단어만 계속 떠오르는 <br> 이유가 바로 이 때문입니다.
+								</p>
+							</div>
+						</div>
+						<div class="s2-timeline-col empty"></div>
+					</div>
+
+					<!-- Row 3: Right card -->
+					<div class="s2-timeline-row">
+						<div class="s2-timeline-dot"></div>
+						<div class="s2-timeline-col empty"></div>
+						<div class="s2-timeline-col">
+							<div class="s2-timeline-card">
+								<h3>3) 명칭 실어증(Anomia)</h3>
+								<p>의학적으로 사물의 이름만을 대지 못하는 증상을 뜻합니다. <br> 뇌 손상으로 인한 병리적 상태를 뜻하기도 하지만, 정상인들도 피로나 스트레스, 노화
+									등으로 인해 일시적인 '기능적 명칭 실어증'을 빈번하게 겪습니다. 사물의 용도와 <br> 모양은 완벽하게 인지하지만, 이름표를 붙이는 뇌의 '좌측
+									측두엽-두정엽' 부위의 <br> 회로가 일시적으로 먹통이 된 상태입니다.</p>
+							</div>
+						</div>
+					</div>
+
+					<!-- Row 4: Left card -->
+					<div class="s2-timeline-row">
+						<div class="s2-timeline-dot"></div>
+						<div class="s2-timeline-col">
+							<div class="s2-timeline-card">
+								<h3>4) 시각적 인지 vs 언어적 부호화의 불일치</h3>
+								<p>인간의 뇌는 정보를 '시각적 형태'와 '언어적 형태' 두 가지 방식으로 나누어 <br> 저장합니다. 모양은 기억나는데 이름이 안 나는 현상은 시각적
+									표상은 매우 강하게 <br> 자극되었으나, 그와 연결된 언어적 표상의 뉴런 고리가 느슨해졌거나 활성화 임계값을 넘지 못해 발생합니다. 즉, 뇌의 '보는
+									컴퓨터'는 켜졌는데 '말하는 프린터'의 케이블이 빠진 셈입니다.</p>
+							</div>
+						</div>
+						<div class="s2-timeline-col empty"></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Pure HTML/CSS for Section D (CTA and Footer section) -->
+			<div class="s2-bottom-section">
+				<div class="s2-intro-wrap">
+					<p>이에 본 사이트는 <b> [이름은 기억나지 않고 오직 모양만 떠오르는 물건들]</b>을 <br> 모아 놓은 아카이브입니다.</p>
+					<p>단순 물건이 아닌, 이름을 자주 까먹는! 모양은 아는데 이름을 잘 모르는! <br> 물건을 위주로 모아 놓았습니다.</p>
+					<p class="s2-cta-prompt">물건을 찾으러 가볼까요?</p>
+				</div>
+				<a href="archive.html" class="s2-cta-btn">찾으러 가기 &nbsp;→</a>
+				<footer class="s2-footer">
+					Blank Object Archive &copy; 2026. Suhyun All rights reserved.
+				</footer>
+			</div>
+		</div>
+	</section>
+
+	<script>
+		const text1 = document.getElementById('text-1');
+		const text2 = document.getElementById('text-2');
+		const text3 = document.getElementById('text-3');
+		const text4 = document.getElementById('text-4');
+		const eyeContainer = document.getElementById('eye-container');
+		const eyeball = document.getElementById('eyeball');
+		const pupil = document.getElementById('pupil');
+		const textEcho = document.getElementById('text-echo');
+
+		// Helper to calculate opacity and scale for echo effect
+		function getEchoParams(progress, fadeInStart, activeStart, activeEnd, fadeOutEnd) {
+			let opacity = 0;
+			let scale = 1.0;
+
+			if (progress < fadeInStart) {
+				opacity = 0;
+				scale = 1.0;
+			} else if (progress >= fadeInStart && progress < activeStart) {
+				// Fade in
+				const ratio = (progress - fadeInStart) / (activeStart - fadeInStart);
+				opacity = ratio;
+				scale = 1.0;
+			} else if (progress >= activeStart && progress < activeEnd) {
+				// Active
+				opacity = 1.0;
+				scale = 1.0;
+			} else if (progress >= activeEnd && progress < fadeOutEnd) {
+				// Fade out with scale growth (echo)
+				const ratio = (progress - activeEnd) / (fadeOutEnd - activeEnd);
+				opacity = 1.0 - ratio;
+				scale = 1.0 + ratio * 1.5; // grows from 1.0 to 2.5
+			} else {
+				opacity = 0;
+				scale = 2.5;
+			}
+
+			return { opacity, scale };
+		}
+
+		// Pupil scale and translate state for smooth scroll & mouse coordination
+		let pupilTranslateX = 0;
+		let pupilTranslateY = 0;
+		let pupilScale = 1.0;
+
+		function updatePupilTransform() {
+			pupil.style.transform = `translate(calc(-50% + ${pupilTranslateX}px), calc(-50% + ${pupilTranslateY}px)) scale(${pupilScale})`;
+		}
+
+		// 1. SCROLL HANDLER: Handles text opacity fading and eyeball zoom-in
+		window.addEventListener('scroll', () => {
+			const scrollTop = window.scrollY;
+			const viewportHeight = window.innerHeight;
+			const progress = scrollTop / viewportHeight;
+
+			// Toggle scroll snapping dynamically to prevent breaking s1 smooth scrollytelling
+			const timelineSection = document.querySelector('.s2-timeline-section');
+			if (timelineSection) {
+				const rect = timelineSection.getBoundingClientRect();
+				if (rect.top <= 0) {
+					document.documentElement.style.scrollSnapType = 'y mandatory';
+				} else {
+					document.documentElement.style.scrollSnapType = 'none';
+				}
+			}
+
+			// Echo effect for text bubbles (scales up and fades out)
+			const params1 = getEchoParams(progress, -0.5, 0, 0.5, 1.0);
+			text1.style.opacity = params1.opacity;
+			text1.style.transform = `scale(${params1.scale})`;
+
+			const params2 = getEchoParams(progress, 0.5, 1.0, 1.5, 2.0);
+			text2.style.opacity = params2.opacity;
+			text2.style.transform = `scale(${params2.scale})`;
+
+			const params3 = getEchoParams(progress, 1.5, 2.0, 2.5, 3.0);
+			text3.style.opacity = params3.opacity;
+			text3.style.transform = `scale(${params3.scale})`;
+
+			const params4 = getEchoParams(progress, 2.5, 3.0, 3.5, 4.0);
+			text4.style.opacity = params4.opacity;
+			text4.style.transform = `scale(${params4.scale})`;
+
+			const paramsEcho = getEchoParams(progress, 5.0, 5.5, 6.0, 6.8);
+			if (textEcho) {
+				textEcho.style.opacity = paramsEcho.opacity;
+				textEcho.style.transform = `translate(-50%, -50%) scale(${paramsEcho.scale})`;
+			}
+
+			// Zoom Eyeball: zoom-in dynamically as we scroll beyond progress 4.0 (up to 8.0)
+			const eyeGif = document.querySelector('.eye-gif');
+			if (progress >= 4.0) {
+				const zoomProgress = Math.min(progress, 8.0); // Clamp to max zoom at progress 8.0
+				const zoomFactor = 1.0 + (zoomProgress - 4.0) * (14.0 / 4.0); // scale from 1.0 to 15.0
+				if (eyeGif) {
+					eyeGif.style.transform = `scale(${zoomFactor})`;
+				}
+				eyeContainer.style.transform = 'translate(-50%, -50%) scale(1.0)';
+				eyeball.style.transform = 'translate(-50%, -50%) scale(1.0)';
+				eyeball.style.zIndex = '1';
+				pupilScale = 1.0;
+				updatePupilTransform();
+			} else {
+				if (eyeGif) {
+					eyeGif.style.transform = 'scale(1.0)';
+				}
+				eyeContainer.style.transform = 'translate(-50%, -50%) scale(1.0)';
+				eyeball.style.transform = 'translate(-50%, -50%) scale(1.0)';
+				eyeball.style.zIndex = '3';
+				pupilScale = 1.0;
+				updatePupilTransform();
+			}
+
+			// New: Eyeball scroll animation in s2 (pupils look up as s2 scrolls in)
+			const s2Section = document.getElementById('s2');
+			const pupilLeft = document.getElementById('s2-pupil-left');
+			const pupilRight = document.getElementById('s2-pupil-right');
+			const eyesContainer = document.querySelector('.s2-eyes-container');
+
+			if (s2Section && pupilLeft && pupilRight && eyesContainer) {
+				const rect = eyesContainer.getBoundingClientRect();
+				const windowHeight = window.innerHeight;
+				let eyeProgress = (windowHeight - rect.top) / windowHeight;
+				eyeProgress = Math.max(0, Math.min(1, eyeProgress));
+				const translateY = 72 - (eyeProgress * 94); // Moves from 72px (bottom) to -22px (top)
+				pupilLeft.style.transform = `translate(-50%, ${translateY}px)`;
+				pupilRight.style.transform = `translate(-50%, ${translateY}px)`;
+
+				// Toggle appear class for text blocks and eyes container
+				const introText = document.querySelector('.s2-intro-text');
+				const stareText = document.querySelector('.s2-stare-text');
+				if (introText && stareText) {
+					const s2Rect = s2Section.getBoundingClientRect();
+					if (s2Rect.top < windowHeight * 0.9) {
+						introText.classList.add('appear');
+						eyesContainer.classList.add('appear');
+						stareText.classList.add('appear');
+					} else {
+						introText.classList.remove('appear');
+						eyesContainer.classList.remove('appear');
+						stareText.classList.remove('appear');
+					}
+				}
+
+				// Removed s2 translateY to eliminate the black gap transition line/background
+			}
+
+			// 3. Timeline line growth and cards entrance
+			const timelineContainer = document.querySelector('.s2-timeline-container');
+			const timelineLine = document.querySelector('.s2-timeline-line');
+			const timelineRows = document.querySelectorAll('.s2-timeline-row');
+
+			if (timelineContainer && timelineLine) {
+				const containerRect = timelineContainer.getBoundingClientRect();
+				const windowHeight = window.innerHeight;
+
+				// Growth progress based on the middle part of the screen
+				const startY = windowHeight * 0.75;
+
+				// Compute progress of line growth
+				let lineProgress = (startY - containerRect.top) / (containerRect.height - 100);
+				lineProgress = Math.max(0, Math.min(1, lineProgress));
+				timelineLine.style.transform = `translateX(-50%) scaleY(${lineProgress})`;
+
+				// Rows entrance
+				timelineRows.forEach(row => {
+					const rowRect = row.getBoundingClientRect();
+					if (rowRect.top + 40 < windowHeight * 0.75) {
+						row.classList.add('active');
+					} else {
+						row.classList.remove('active');
+					}
+				});
+			}
+		});
+
+		// 2. MOUSE TRACKING: Pupil follows cursor smoothly inside eyeball bounds
+		document.addEventListener('mousemove', (e) => {
+			const rect = eyeball.getBoundingClientRect();
+			const eyeballCenterX = rect.left + rect.width / 2;
+			const eyeballCenterY = rect.top + rect.height / 2;
+
+			const dx = e.clientX - eyeballCenterX;
+			const dy = e.clientY - eyeballCenterY;
+			const angle = Math.atan2(dy, dx);
+
+			// Define boundary translation limits for pupil inside eyeball bounds
+			const maxDistX = rect.width * 0.25;
+			const maxDistY = rect.height * 0.29;
+
+			const distance = Math.hypot(dx, dy);
+			const maxFollowDistance = 500;
+			const scaleVal = Math.min(distance / maxFollowDistance, 1.0);
+
+			pupilTranslateX = Math.cos(angle) * maxDistX * scaleVal;
+			pupilTranslateY = Math.sin(angle) * maxDistY * scaleVal;
+
+			updatePupilTransform();
+		});
+
+		// Floating Keywords Animation
+		const midSection = document.querySelector('.s2-mid-section');
+		const keywords = document.querySelectorAll('.s2-keyword');
+
+		if (midSection && keywords.length > 0) {
+			const kwData = [];
+
+			function initKeywords() {
+				keywords.forEach((el, index) => {
+					const x = el.offsetLeft;
+					const y = el.offsetTop;
+					const angle = Math.random() * 2 * Math.PI;
+					const speed = 0.2 + Math.random() * 0.3; // Very slow: 0.2 to 0.5 pixels per frame
+					const vx = Math.cos(angle) * speed;
+					const vy = Math.sin(angle) * speed;
+
+					kwData[index] = {
+						el: el,
+						x: x,
+						y: y,
+						vx: vx,
+						vy: vy
+					};
+
+					el.style.left = x + 'px';
+					el.style.top = y + 'px';
+					el.style.margin = '0';
+				});
+			}
+
+			initKeywords();
+
+			let resizeTimeout;
+			window.addEventListener('resize', () => {
+				clearTimeout(resizeTimeout);
+				resizeTimeout = setTimeout(() => {
+					initKeywords();
+				}, 200);
+			});
+
+			function animateKeywords() {
+				const containerWidth = midSection.clientWidth;
+				const containerHeight = midSection.clientHeight || 900;
+
+				kwData.forEach(kw => {
+					kw.x += kw.vx;
+					kw.y += kw.vy;
+
+					const w = kw.el.offsetWidth;
+					const h = kw.el.offsetHeight;
+
+					if (kw.x < 0) {
+						kw.x = 0;
+						kw.vx = -kw.vx;
+					} else if (kw.x + w > containerWidth) {
+						kw.x = containerWidth - w;
+						kw.vx = -kw.vx;
+					}
+
+					if (kw.y < 0) {
+						kw.y = 0;
+						kw.vy = -kw.vy;
+					} else if (kw.y + h > containerHeight) {
+						kw.y = containerHeight - h;
+						kw.vy = -kw.vy;
+					}
+
+					kw.el.style.left = kw.x + 'px';
+					kw.el.style.top = kw.y + 'px';
+				});
+
+				requestAnimationFrame(animateKeywords);
+			}
+
+			requestAnimationFrame(animateKeywords);
+		}
+	</script>
+</body>
+
+</html>
